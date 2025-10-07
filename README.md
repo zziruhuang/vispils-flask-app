@@ -9,8 +9,8 @@
 #### 1. Clone the repo
 
 ```bash
-git clone <your-repo-url>
-cd 230705-VISPILS-app
+git clone https://github.com/zziruhuang/vispils-flask-app.git
+cd vispils-flask-app
 ```
 
 #### 2. Create a Python environment (choose one)
@@ -116,19 +116,6 @@ These directories contain `.gitkeep` files only. You must populate them with the
 
 ---
 
-## 📂 Structure
-
-```
-230705-VISPILS-app/
-├── backend/          # Flask app, ML, chemistry utils
-├── frontend/         # HTML, JS, CSS, JSmol
-├── data/            # Sample data, models
-├── vispils/         # Chemprop and ML scripts
-└── requirements.txt
-```
-
----
-
 ## 🔧 Tech Stack
 
 - **Backend:** Flask, PyTorch, RDKit, OpenBabel
@@ -141,6 +128,7 @@ These directories contain `.gitkeep` files only. You must populate them with the
 ## 📚 References
 
 - [Chemprop](https://github.com/chemprop/chemprop)
+- [CMPNN](https://github.com/SY575/CMPNN)
 - [ILThermo](https://ilthermo.boulder.nist.gov/)
 - [RDKit](https://www.rdkit.org/)
 - [JSmol](http://wiki.jmol.org/index.php/JSmol)
