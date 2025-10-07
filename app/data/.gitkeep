@@ -1,0 +1,3 @@
+# Placeholder for app data directory
+# This directory should contain application data files (.csv, .mol, etc.)
+# Large data files are managed via Git LFS or external storage

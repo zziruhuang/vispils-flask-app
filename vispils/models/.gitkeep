@@ -1,0 +1,3 @@
+# Placeholder for vispils models directory
+# This directory should contain trained ML model files (.pt, .pth, etc.)
+# Large model files are managed via Git LFS or external storage

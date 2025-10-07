@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VISPILS - Ionic Liquid Visualization & Prediction</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="static/css/main-a.css" />
+
+    <!-- jQuery -->
+    <script
+      src="https://code.jquery.com/jquery-3.7.0.js"
+      integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- JSmol -->
+    <script src="static/jsmol/JSmol.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var myJmol = "myJmol";
+      var JmolInfo = {
+        width: "100%",
+        height: "100%",
+        color: "#E2F4F5",
+        j2sPath: "static/jsmol/j2s",
+        serverURL: "static/jsmol/php/jsmol.php",
+        use: "html5",
+      };
+    </script>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="container">
+        <a class="logo" href="#">VISPILS</a>
+        <nav class="navbar">
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- Hero Section -->
+        <section class="hero-section" id="home">
+          <div class="hero-content">
+            <h1 class="hero-title">VISPILS</h1>
+            <p class="hero-subtitle">
+              Visualization, Extraction, and Prediction of Ionic Liquids
+            </p>
+            <p class="hero-description">
+              Explore and predict properties of ionic liquids through an
+              interactive molecular interface
+            </p>
+          </div>
+        </section>
+
+        <!-- Selection Process -->
+        <section class="select-IL">
+          <div class="selection-container" id="select-cfams">
+            <h2>Step 1: Select a Cation Family</h2>
+            <p class="selection-description">
+              Choose from our curated collection of cation families to begin
+              building your ionic liquid
+            </p>
+            <div class="box-option-list">
+              <div class="option-list">
+                <h4>Unsaturated cyclic amines</h4>
+                <div class="option" value="im">
+                  <img src="static/img/im.png" alt="[im]" />
+                  <p>[im]</p>
+                </div>
+                <div class="option" value="py">
+                  <img src="static/img/py.png" alt="[py]" />
+                  <p>[py]</p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>Cyclic amines</h4>
+                <div class="option" value="pyr">
+                  <img src="static/img/pyr.png" alt="[pyr]" />
+                  <p>[pyr]</p>
+                </div>
+                <div class="option" value="pip">
+                  <img src="static/img/pip.png" alt="[pip]" />
+                  <p>[pip]</p>
+                </div>
+                <div class="option" value="mor">
+                  <img src="static/img/mor.png" alt="[mor]" />
+                  <p>[mor]</p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>Acyclic</h4>
+                <div class="option" value="s">
+                  <img src="static/img/s.png" alt="[s]" />
+                  <p>[s]</p>
+                </div>
+                <div class="option" value="n">
+                  <img src="static/img/n.png" alt="[n]" />
+                  <p>[n]</p>
+                </div>
+                <div class="option" value="p">
+                  <img src="static/img/p.png" alt="[p]" />
+                  <p>[p]</p>
+                </div>
+              </div>
+            </div>
+            <div class="btn">
+              <button class="select-btn">Continue</button>
+            </div>
+          </div>
+
+          <div
+            class="selection-container"
+            id="select-cations"
+            style="display: none"
+          >
+            <h2>Step 2: Select a Cation</h2>
+            <p class="selection-description">
+              Browse and select a specific cation from the chosen family
+            </p>
+            <div class="mol-list">
+              <!-- Sample molecules will be populated here -->
+              <div class="mol-imgs" value="CCn1cc[n+](C)c1">
+                <img src="static/img/sample-mol1.png" alt="Sample Molecule 1" />
+              </div>
+              <div class="mol-imgs" value="CCn1cc[n+](C)c1C">
+                <img src="static/img/sample-mol2.png" alt="Sample Molecule 2" />
+              </div>
+              <div class="mol-imgs" value="CCn1cc[n+](C)c1CC">
+                <img src="static/img/sample-mol3.png" alt="Sample Molecule 3" />
+              </div>
+            </div>
+            <div class="btn">
+              <button class="select-btn">Continue</button>
+            </div>
+          </div>
+
+          <div
+            class="selection-container"
+            id="select-afams"
+            style="display: none"
+          >
+            <h2>Step 3: Select an Anion Family</h2>
+            <p class="selection-description">
+              Choose an anion family to pair with your selected cation
+            </p>
+            <div class="box-option-list">
+              <div class="option-list">
+                <h4>[N-]</h4>
+                <div class="option" value="[N-]">
+                  <img src="static/img/[n-].png" alt="[N-]" />
+                  <p></p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>[MLn]</h4>
+                <div class="option" value="mln">
+                  <img src="static/img/mln.png" alt="[MLn]" />
+                  <p></p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>[O-]</h4>
+                <div class="option" value="[O-]">
+                  <img src="static/img/[o-].png" alt="[O-]" />
+                  <p></p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>[Cyc]</h4>
+                <div class="option" value="cyc">
+                  <img src="static/img/cyc.png" alt="[Cyc]" />
+                  <p></p>
+                </div>
+              </div>
+              <div class="option-list">
+                <h4>[Oph]</h4>
+                <div class="option" value="oph">
+                  <img src="static/img/oph.png" alt="[Oph]" />
+                  <p></p>
+                </div>
+              </div>
+            </div>
+            <div class="btn">
+              <button class="select-btn">Continue</button>
+            </div>
+          </div>
+
+          <div
+            class="selection-container"
+            id="select-anions"
+            style="display: none"
+          >
+            <h2>Step 4: Select an Anion</h2>
+            <p class="selection-description">
+              Select a specific anion to complete your ionic liquid
+            </p>
+            <div class="mol-list">
+              <!-- Sample anions will be populated here -->
+              <div class="mol-imgs" value="F[B-](F)(F)F">
+                <img src="static/img/sample-anion1.png" alt="Sample Anion 1" />
+              </div>
+              <div class="mol-imgs" value="N#C[B-](F)(F)C(F)(F)C(F)(F)F">
+                <img src="static/img/sample-anion2.png" alt="Sample Anion 2" />
+              </div>
+            </div>
+            <div class="btn">
+              <button class="select-btn" id="btn4">
+                Generate Ionic Liquid
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Molecular Viewer -->
+        <section
+          class="viewer_section"
+          id="viewer_section"
+          style="display: none"
+        >
+          <h2 class="final-selection" id="success">
+            🎉 Your Ionic Liquid Has Been Generated!
+          </h2>
+          <p class="viewer-description">
+            Explore the 3D molecular structure of your selected ionic liquid
+          </p>
+          <div id="JmolDiv"></div>
+        </section>
+
+        <!-- Results Section -->
+        <section
+          class="results_section"
+          id="results_section"
+          style="display: none"
+        >
+          <div class="container results-container">
+            <h4>Predicted Properties for Your Ionic Liquid</h4>
+            <div class="pred-table">
+              <table>
+                <caption>
+                  Predicted Properties
+                </caption>
+                <tr>
+                  <th>Ionic Liquid</th>
+                  <th>Viscosity (mPas)</th>
+                  <th>Temperature (K)</th>
+                  <th>Data Source</th>
+                </tr>
+                <tr>
+                  <td>CCn1cc[n+](C)c1.F[B-](F)(F)F</td>
+                  <td>45.2</td>
+                  <td>298.15</td>
+                  <td>Experimental</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about-section" id="about">
+          <div class="about-content">
+            <h2>About VISPILS</h2>
+            <div class="about-grid">
+              <div class="about-card">
+                <h3>🔬 Molecular Visualization</h3>
+                <p>
+                  Interactive 2D and 3D molecular structure visualization using
+                  advanced chemistry libraries.
+                </p>
+              </div>
+              <div class="about-card">
+                <h3>📊 Property Prediction</h3>
+                <p>
+                  Machine learning-based prediction of ionic liquid properties
+                  including viscosity and thermal behavior.
+                </p>
+              </div>
+              <div class="about-card">
+                <h3>📚 Data Integration</h3>
+                <p>
+                  Comprehensive database integration with ILThermo and
+                  scientific literature extraction capabilities.
+                </p>
+              </div>
+              <div class="about-card">
+                <h3>🎯 Research Focus</h3>
+                <p>
+                  Designed for researchers and scientists working with ionic
+                  liquids and related compounds.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <p>
+          © 2019-2024 VISPILS - Ionic Liquid Research Platform | Developed by
+          Ziru
+        </p>
+      </div>
+    </main>
+
+    <!-- Demo JavaScript -->
+    <script>
+      // Demo functionality for standalone version
+      $(document).ready(function () {
+        // Handle option selection
+        $(".option").on("click", function () {
+          $(this).addClass("selected");
+          $(this).siblings().removeClass("selected");
+          $(this)
+            .closest(".selection-container")
+            .find(".select-btn")
+            .addClass("active");
+        });
+
+        // Handle molecule selection
+        $(".mol-imgs").on("click", function () {
+          $(this).addClass("selected");
+          $(this).siblings().removeClass("selected");
+          $(this)
+            .closest(".selection-container")
+            .find(".select-btn")
+            .addClass("active");
+        });
+
+        // Handle continue buttons
+        $(".select-btn").on("click", function () {
+          if ($(this).hasClass("active")) {
+            const currentContainer = $(this).closest(".selection-container");
+            const nextContainer = currentContainer.next(".selection-container");
+
+            if (nextContainer.length > 0) {
+              currentContainer.hide();
+              nextContainer.show();
+              $("html, body").animate(
+                {
+                  scrollTop: nextContainer.offset().top - 100,
+                },
+                500
+              );
+            }
+          }
+        });
+
+        // Handle final generation
+        $("#btn4").on("click", function () {
+          if ($(this).hasClass("active")) {
+            $("#select-anions").hide();
+            $("#viewer_section").show();
+            $("#results_section").show();
+
+            $("html, body").animate(
+              {
+                scrollTop: $("#viewer_section").offset().top - 100,
+              },
+              500
+            );
+          }
+        });
+
+        // Smooth scrolling for navigation
+        $('a[href^="#"]').on("click", function (e) {
+          e.preventDefault();
+          const target = $(this.getAttribute("href"));
+          if (target.length) {
+            $("html, body").animate(
+              {
+                scrollTop: target.offset().top - 80,
+              },
+              500
+            );
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

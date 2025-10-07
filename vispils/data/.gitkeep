@@ -1,0 +1,3 @@
+# Placeholder for vispils data directory
+# This directory should contain training/validation data (.csv, .xlsx, etc.)
+# Large data files are managed via Git LFS or external storage

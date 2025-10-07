@@ -1,0 +1,137 @@
+# Streamlined .gitignore tailored for VISPILS-app
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+.Trashes
+
+# Media Folders & Binary Files
+docs/
+archive/
+*.pptx
+*.pdf
+*.docx
+*.doc
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.mp4
+*.mov
+*.avi
+*.xlsx
+*.csv
+
+
+
+
+# ML model artifacts and outputs (do not commit large binary weights)
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.joblib
+*.pkl
+
+
+# Git LFS files: git lfs track "img/"
+frontend/static/img/*
+!frontend/static/img/.gitkeep
+vispils/data/*
+!vispils/data/.gitkeep
+vispils/models/*
+!vispils/models/.gitkeep
+
+# Frontend files
+app/data/*
+!app/data/.gitkeep
+frontend/static/jsmol/*
+!frontend/static/jsmol/.gitkeep
+
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual env / packaging
+venv/
+.venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.python-version
+
+# Conda envs / caches (keep conda-vispils.yml tracked)
+.conda/
+conda-meta/
+pkgs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Logs and runtime
+logs/
+*.log
+debug.log*
+.venv/
+.nyc_output/
+coverage/
+htmlcov/
+.pytest_cache/
+tox.ini
+.tox/
+
+
+# Node / frontend build artifacts
+node_modules/
+npm-debug.log*
+yarn-error.log
+yarn-debug.log
+.pnp.cjs
+.pnp.js
+.pnp/
+.cache/
+dist/
+build/
+out/
+public/build/
+frontend/dist/
+frontend/build/
+
+# Static/compiled assets
+*.min.js.map
+*.map
+
+# IDEs and editors
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.sublime-project
+*.sublime-workspace
+*.swp
+
+# Docker / containers
+docker-compose.override.yml
+.vagrant/
+
+# Misc large artifacts
+*.sqlite
+*.db
+*.bak
+*.tmp
+*.temp
+Thumbs.db
+
+# Allow tracking of this file and placeholder files
+!.gitignore
+!.gitkeep
