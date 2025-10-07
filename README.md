@@ -142,7 +142,3 @@ MIT
 ---
 
 **Ready to explore the future of ionic liquid research? Clone, run, and discover!**
-
-```
-
-```
