@@ -276,7 +276,7 @@ def predict_properties():
             return jsonify({"error": f"Error processing SMILES: {e}"}), 400
         
         # Search in VISPILS database
-        tolerance = 0.15
+        tolerance = 1
         matching_data = VISPILS_DATA[
             (VISPILS_DATA['Iso SMILES'] == standardized_smiles) & 
             (VISPILS_DATA['Temperature'].between(temperature - tolerance, temperature + tolerance))
@@ -294,9 +294,9 @@ def predict_properties():
         predicted_value = None
         predicted_text = None
         try:
-            smis_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'data-smis.csv')
-            descs_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'data-descs.csv')
-            predict_out_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'Predict.csv')
+            smis_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'data-smis.csv')
+            descs_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'data-descs.csv')
+            predict_out_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'Predict.csv')
             with open(smis_path, 'w') as f:
                 f.write('Iso SMILES,Log viscosity\n')
                 f.write(f'{standardized_smiles},0\n')
@@ -305,7 +305,7 @@ def predict_properties():
                 f.write(f'{temperature}\n')
             import subprocess
             script_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'predict.py')
-            checkpoint_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'model', 'model-corr-5-temp-100-3-2-scale3-constrain-seed42', 'fold_0')
+            checkpoint_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'models', 'model-corr-5-temp-100-3-2-scale3-constrain-seed42', 'fold_0')
             cmd = [
                 'python', script_path,
                 '--data_path', smis_path,
