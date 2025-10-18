@@ -87,7 +87,7 @@ def load_vispils_data():
         tuple: (vispils_df, cations_df, anions_df)
     """
     try:
-        data_path = os.path.join(os.path.dirname(__file__), "..", "data", "vispils-v1.csv")
+        data_path = os.path.join(os.path.dirname(__file__), "..", "vispils", "data", "vispils-v1.csv")
         vispils_df = pd.read_csv(data_path)
         
         # Extract unique cations and anions
