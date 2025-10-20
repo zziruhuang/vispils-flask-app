@@ -114,9 +114,6 @@ def create_chemprop_prediction_files(il_smiles: str,
         
     except (OSError, IOError) as e:
         error_details = str(e)
-        if verbose:
-            print(f"\n✗ Failed to create prediction files: {error_details}")
-            print("=== Model Prediction Files Creation Failed ===")
         raise OSError(f"Failed to write prediction files: {e}")
     
     # Create results dictionary
@@ -127,15 +124,11 @@ def create_chemprop_prediction_files(il_smiles: str,
         'directory': save_dir
     }
     
-    # Print summary based on success/failure
-    if verbose:
-        if files_created_successfully:
-            print("\n=== Model Prediction Files Ready ===")
-            for key, path in results.items():
-                print(f"{key}: {path}")
-        else:
-            print("\n=== Model Prediction Files Creation Failed ===")
-            if error_details:
-                print(f"Error: {error_details}")
+    # Print success summary
+    if verbose and files_created_successfully:
+        print("\n=== Model Prediction Files Ready ===")
+        for key, path in results.items():
+            print(f"{key}: {path}")
+
     
     return results
