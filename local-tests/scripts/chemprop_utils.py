@@ -9,7 +9,7 @@ from pathlib import Path
 
 def create_chemprop_prediction_files(il_smiles: str, 
                                     temperature_k: float = 298.15, 
-                                    save_dir=None,
+                                    save_dir = None,
                                     verbose: bool = True) -> dict:
     """Create prediction input files for GNN model (CMPNN/Chemprop).
 
@@ -54,10 +54,16 @@ def create_chemprop_prediction_files(il_smiles: str,
     
     # Input validation
     if not il_smiles or not isinstance(il_smiles, str):
-        raise ValueError(f"il_smiles must be a non-empty string, got: {il_smiles}")
+        error_msg = f"il_smiles must be a non-empty string, got: {il_smiles}"
+        if verbose:
+            print(f"\n✗ {error_msg}")
+        raise ValueError(error_msg)
     
     if temperature_k <= 0:
-        raise ValueError(f"temperature_k must be positive, got: {temperature_k}")
+        error_msg = f"temperature_k must be positive, got: {temperature_k}"
+        if verbose:
+            print(f"\n✗ {error_msg}")
+        raise ValueError(error_msg)
     
     # Convert to Path object and handle default
     if save_dir is None:
@@ -65,24 +71,29 @@ def create_chemprop_prediction_files(il_smiles: str,
     else:
         save_dir = Path(save_dir)
     
-    # Create directory if it doesn't exist, gracefully handle existing directories
-    try:
-        if save_dir.exists():
-            if verbose:
-                print(f"ℹ Using existing directory: {save_dir.resolve()}")
-        else:
-            save_dir.mkdir(parents=True, exist_ok=True)
-            if verbose:
-                print(f"✓ Created new directory: {save_dir.resolve()}")
-    except OSError as e:
-        raise OSError(f"Failed to create/access directory {save_dir}: {e}")
-    
-    # Define file paths
-    smis_path = save_dir / "data-smis.csv"
-    descs_path = save_dir / "data-descs.csv"
-    predict_out_path = save_dir / "Predict.csv"
+    # Track execution status
+    files_created_successfully = False
+    error_details = None
     
     try:
+        # Create directory if it doesn't exist, gracefully handle existing directories
+        try:
+            if save_dir.exists():
+                if verbose:
+                    print(f"ℹ Using existing directory: {save_dir.resolve()}")
+            else:
+                save_dir.mkdir(parents=True, exist_ok=True)
+                if verbose:
+                    print(f"✓ Created new directory: {save_dir.resolve()}")
+        except OSError as e:
+            error_details = f"Failed to create/access directory {save_dir}: {e}"
+            raise OSError(error_details)
+        
+        # Define file paths
+        smis_path = save_dir / "data-smis.csv"
+        descs_path = save_dir / "data-descs.csv"
+        predict_out_path = save_dir / "Predict.csv"
+        
         # Write SMILES file
         with open(smis_path, "w") as smis_f:
             smis_f.write("il_smiles,log_10_viscosity_mpas\n")
@@ -98,7 +109,14 @@ def create_chemprop_prediction_files(il_smiles: str,
             print(f"✓ Created descriptors file: {descs_path}")
             print(f"✓ Predictions will be saved to: {predict_out_path}")
         
-    except OSError as e:
+        # If we reach here, all files were created successfully
+        files_created_successfully = True
+        
+    except (OSError, IOError) as e:
+        error_details = str(e)
+        if verbose:
+            print(f"\n✗ Failed to create prediction files: {error_details}")
+            print("=== Model Prediction Files Creation Failed ===")
         raise OSError(f"Failed to write prediction files: {e}")
     
     # Create results dictionary
@@ -109,10 +127,15 @@ def create_chemprop_prediction_files(il_smiles: str,
         'directory': save_dir
     }
     
-    # Print summary (only if verbose)
+    # Print summary based on success/failure
     if verbose:
-        print("\n=== Model Prediction Files Ready ===")
-        for key, path in results.items():
-            print(f"{key}: {path}")
+        if files_created_successfully:
+            print("\n=== Model Prediction Files Ready ===")
+            for key, path in results.items():
+                print(f"{key}: {path}")
+        else:
+            print("\n=== Model Prediction Files Creation Failed ===")
+            if error_details:
+                print(f"Error: {error_details}")
     
     return results
