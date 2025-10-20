@@ -50,7 +50,7 @@ def load_csv_filtered(filepath, filter_dict=None, columns=None):
 # Default column mapping for standardizing old dataset column names
 DEFAULT_RENAME_COLS = {
     "Dataset": "reference",
-    "Iso SMILES": "sanitized_smiles",
+    "Iso SMILES": "sanitized_il_smiles",
     "cSMILES": "cation_smiles",
     "aSMILES": "anion_smiles",
     "Pressure": "pressure_atm",
