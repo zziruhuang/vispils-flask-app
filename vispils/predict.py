@@ -31,8 +31,8 @@ if __name__ == '__main__':
     for i in range(len(pred[0])):
         df[f'pred_{i}'] = [item[i] for item in pred]
 
-    print(f"Saving to file {args.save_dir + '/Predict.csv'}")
-    df.to_csv(args.save_dir + '/Predict.csv', index=False)
+    print(f"Saving model predictions to file {args.save_dir + '/predict.csv'}")
+    df.to_csv(args.save_dir + '/predict.csv', index=False)
 
 
     end_time = time.time()

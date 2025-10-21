@@ -210,7 +210,7 @@ def update_checkpoint_args(args: Namespace):
         raise ValueError('Only one of checkpoint_dir and checkpoint_path can be specified.')
 
     if args.checkpoint_dir is None:
-        args.checkpoint_paths = [args.checkpoint_path+"/model_0/model.pt"] if args.checkpoint_path is not None else None
+        args.checkpoint_paths = [args.checkpoint_path+"/model.pt"] if args.checkpoint_path is not None else None
         return
 
     args.checkpoint_paths = []
