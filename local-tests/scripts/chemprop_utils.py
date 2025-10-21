@@ -6,6 +6,14 @@ ai: claude-haiku-4.5
 """
 
 from pathlib import Path
+import os
+
+def to_display_path(p):
+    """Convert a Path to a relative path string for display using os.path.relpath."""
+    try:
+        return os.path.relpath(str(p), os.getcwd())
+    except (ValueError, TypeError):
+        return str(p)
 
 def create_chemprop_input_files(il_smiles: list[str], 
                                 temperature_k: list[int|float] = [298.15], 
@@ -69,11 +77,11 @@ def create_chemprop_input_files(il_smiles: list[str],
     try:
         if input_files_dir.exists():
             if verbose:
-                print(f"ℹ Using existing directory: {input_files_dir.resolve()}")
+                print(f"ℹ Using existing directory: {to_display_path(input_files_dir)}")
         else:
             input_files_dir.mkdir(parents=True, exist_ok=True)
             if verbose:
-                print(f"✓ Created new directory: {input_files_dir.resolve()}")
+                print(f"✓ Created new directory: {to_display_path(input_files_dir)}")
     except OSError as e:
         raise OSError(f"Failed to create/access directory {input_files_dir}: {e}")
     
@@ -88,7 +96,7 @@ def create_chemprop_input_files(il_smiles: list[str],
             for il in il_smiles:
                 smiles_f.write(f"{il},0\n")
         if verbose:
-            print(f"✓ Created SMILES file: {smiles_path}")
+            print(f"✓ Created SMILES file: {to_display_path(smiles_path)}")
         
         # Write descriptors file
         with open(descs_path, "w") as descs_f:
@@ -96,7 +104,7 @@ def create_chemprop_input_files(il_smiles: list[str],
             for t in temperature_k:
                 descs_f.write(f"{t}\n")
         if verbose:
-            print(f"✓ Created descriptors file: {descs_path}")
+            print(f"✓ Created descriptors file: {to_display_path(descs_path)}")
         
     except OSError as e:
         raise OSError(f"Failed to write prediction files: {e}")
@@ -112,7 +120,7 @@ def create_chemprop_input_files(il_smiles: list[str],
     if verbose:
         print("\n=== Model Input Files Ready ===")
         for key, path in results.items():
-            print(f"{key}: {path}")
+            print(f"{key}: {to_display_path(path)}")
     
     return results
 
@@ -163,6 +171,10 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
         >>> if result['success']:
         ...     print(f"Predictions saved to {result['output_path']}")
     """
+    # Store original input paths for display purposes
+    input_files_dir_display = input_files_dir
+    predict_script_path_display = predict_script_path
+    model_checkpoint_path_display = model_checkpoint_path
     
     # Convert all paths to Path objects and resolve them
     input_files_dir = Path(input_files_dir).resolve()
@@ -179,9 +191,9 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
     
     if verbose:
         print("✓ Validated input paths:")
-        print(f"  - Input files: {input_files_dir}")
-        print(f"  - Script: {predict_script_path}")
-        print(f"  - Checkpoint: {model_checkpoint_path}")
+        print(f"  - Input files: {to_display_path(Path(input_files_dir_display))}")
+        print(f"  - Script: {to_display_path(Path(predict_script_path_display))}")
+        print(f"  - Checkpoint: {to_display_path(Path(model_checkpoint_path_display))}")
     
     # Define expected input files
     smiles_path = input_files_dir / "input_smiles.csv"
@@ -215,9 +227,9 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
         actual_checkpoint_path = pt_files[0]
     
     if verbose:
-        print(f"✓ Using model checkpoint: {actual_checkpoint_path.relative_to(model_checkpoint_path)}")
+        print(f"✓ Using model checkpoint: {to_display_path(actual_checkpoint_path)}")
     
-    # Build the command
+    # Build the command (use absolute paths for actual execution)
     cmd = [
         "python", str(predict_script_path),
         "--data_path", str(smiles_path),
@@ -228,10 +240,21 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
         "--no_cuda"
     ]
     
+    # Build display command (use relative paths for readability)
+    cmd_display = [
+        "python", to_display_path(predict_script_path),
+        "--data_path", to_display_path(smiles_path),
+        "--features_path", to_display_path(descs_path),
+        "--save_dir", to_display_path(predict_out_path.parent),
+        "--checkpoint_path", to_display_path(actual_checkpoint_path),
+        "--hidden_size", "100",
+        "--no_cuda"
+    ]
+    
     # Prepare result dictionary
     result = {
         'success': False,
-        'command': " \n".join(cmd),
+        'command': " \\\n  ".join(cmd_display),
         'stdout': "",
         'stderr': "",
         'output_path': predict_out_path,
@@ -279,7 +302,7 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
                     print(f"Standard output:\n{process.stdout}")
         
     except subprocess.TimeoutExpired:
-        error_msg = "Prediction script execution timed out (1 hour limit)"
+        error_msg = "Prediction script execution timed out (5 minute limit)"
         result['stderr'] = error_msg
         if verbose:
             print(f"✗ {error_msg}")
