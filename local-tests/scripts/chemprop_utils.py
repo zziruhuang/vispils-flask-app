@@ -96,7 +96,7 @@ def create_chemprop_input_files(il_smiles: list[str],
             for il in il_smiles:
                 smiles_f.write(f"{il},0\n")
         if verbose:
-            print(f"✓ Created SMILES file: {to_display_path(smiles_path)}")
+            print(f"✓ Created SMILES file: {str(smiles_path.resolve())}")
         
         # Write descriptors file
         with open(descs_path, "w") as descs_f:
@@ -104,7 +104,7 @@ def create_chemprop_input_files(il_smiles: list[str],
             for t in temperature_k:
                 descs_f.write(f"{t}\n")
         if verbose:
-            print(f"✓ Created descriptors file: {to_display_path(descs_path)}")
+            print(f"✓ Created descriptors file: {str(descs_path.resolve())}")
         
     except OSError as e:
         raise OSError(f"Failed to write prediction files: {e}")
@@ -191,9 +191,9 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
     
     if verbose:
         print("✓ Validated input paths:")
-        print(f"  - Input files: {to_display_path(Path(input_files_dir_display))}")
-        print(f"  - Script: {to_display_path(Path(predict_script_path_display))}")
-        print(f"  - Checkpoint: {to_display_path(Path(model_checkpoint_path_display))}")
+        print(f"  - Input files: {str(Path(input_files_dir))}")
+        print(f"  - Script: {str(Path(predict_script_path))}")
+        print(f"  - Checkpoint: {str(Path(model_checkpoint_path))}")
     
     # Define expected input files
     smiles_path = input_files_dir / "input_smiles.csv"
@@ -224,10 +224,10 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
                 print(f"  Found checkpoint: {pt.relative_to(model_checkpoint_path)}")
         
         # Use the first found .pt file (or could use most recent)
-        actual_checkpoint_path = pt_files[0]
+        actual_checkpoint_path = pt_files[0].parent
     
     if verbose:
-        print(f"✓ Using model checkpoint: {to_display_path(actual_checkpoint_path)}")
+        print(f"✓ Using model checkpoint in: {str(actual_checkpoint_path)}")
     
     # Build the command (use absolute paths for actual execution)
     cmd = [
