@@ -13,6 +13,7 @@ archive/
 *.pdf
 *.docx
 *.doc
+*.svg
 *.png
 *.jpg
 *.jpeg
