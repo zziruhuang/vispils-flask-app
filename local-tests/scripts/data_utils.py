@@ -119,6 +119,117 @@ def rename_cols_df(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
     return df_renamed if not inplace else df
 
 
+def merge_with_tolerance(df_left: pd.DataFrame, 
+                        df_right: pd.DataFrame,
+                        left_key: str = 'temperature_k',
+                        right_key: str = 'temperature_k',
+                        tolerance: float = 1.0,
+                        how: str = 'left') -> pd.DataFrame:
+    """Merge two dataframes based on a numeric column with tolerance.
+    
+    This function performs a "fuzzy" merge where numeric keys must be within
+    a specified tolerance range rather than matching exactly. Useful for merging
+    experimental and predicted data that may have slightly different temperature
+    values due to rounding or precision differences.
+    
+    Args:
+        df_left (pd.DataFrame): Left dataframe to merge from.
+        df_right (pd.DataFrame): Right dataframe to merge from.
+        left_key (str): Column name in df_left to match on. Default is 'temperature_k'.
+        right_key (str): Column name in df_right to match on. Default is 'temperature_k'.
+        tolerance (float): Tolerance range for matching. A left value matches a right
+                          value if abs(left - right) <= tolerance. Default is 1.0.
+        how (str): Type of merge - 'left', 'right', 'inner', or 'outer'.
+                   Default is 'left'.
+    
+    Returns:
+        pd.DataFrame: Merged dataframe with matched rows based on tolerance.
+    
+    Example:
+        >>> # Merge experimental data (273.15 K) with predicted data (273 K)
+        >>> df_exp = pd.DataFrame({'temperature_k': [273.15, 283.15, 298.15], 
+        ...                         'viscosity': [10.5, 5.2, 2.1]})
+        >>> df_pred = pd.DataFrame({'temperature_k': [273, 283, 298],
+        ...                          'predicted_viscosity': [10.3, 5.1, 2.2]})
+        >>> df_merged = merge_with_tolerance(df_exp, df_pred, tolerance=1.0)
+        >>> # All rows match because differences are <= 1.0 K
+    """
+    import numpy as np
+    
+    # Create a merge key for matching within tolerance
+    def find_matches(left_val, right_series, tol):
+        """Find all indices in right_series within tolerance of left_val"""
+        distances = np.abs(right_series - left_val)
+        return distances <= tol
+    
+    # Initialize result list
+    matched_rows = []
+    
+    # For each row in left dataframe
+    for left_idx, left_row in df_left.iterrows():
+        left_val = left_row[left_key]
+        
+        # Find matching rows in right dataframe
+        matches = find_matches(left_val, df_right[right_key], tolerance)
+        matching_indices = df_right[matches].index.tolist()
+        
+        if matching_indices:
+            # For each match, merge the rows
+            for right_idx in matching_indices:
+                right_row = df_right.loc[right_idx]
+                
+                # Start with left row to preserve its columns
+                merged_dict = left_row.to_dict()
+                
+                # Add columns from right row (skip if key column with same name)
+                for col in right_row.index:
+                    if col != right_key or left_key != right_key:
+                        # Don't overwrite left key column with right key column if they're the same
+                        merged_dict[col] = right_row[col]
+                
+                merged_row = pd.Series(merged_dict)
+                matched_rows.append(merged_row)
+        else:
+            # No match found - behavior depends on 'how' parameter
+            if how in ['left', 'outer']:
+                merged_dict = left_row.to_dict()
+                # Add NaN columns from right df
+                for col in df_right.columns:
+                    if col not in merged_dict:
+                        merged_dict[col] = np.nan
+                merged_row = pd.Series(merged_dict)
+                matched_rows.append(merged_row)
+    
+    # Handle 'right' and 'outer' joins for unmatched right rows
+    if how in ['right', 'outer']:
+        matched_left_indices = set()
+        for left_idx, left_row in df_left.iterrows():
+            left_val = left_row[left_key]
+            matches = find_matches(left_val, df_right[right_key], tolerance)
+            if matches.any():
+                matched_left_indices.add(left_idx)
+        
+        for right_idx, right_row in df_right.iterrows():
+            right_val = right_row[right_key]
+            matches = find_matches(right_val, df_left[left_key], tolerance)
+            
+            if not matches.any():
+                # This right row has no match
+                merged_dict = right_row.to_dict()
+                # Add NaN columns from left df
+                for col in df_left.columns:
+                    if col not in merged_dict:
+                        merged_dict[col] = np.nan
+                merged_row = pd.Series(merged_dict)
+                matched_rows.append(merged_row)
+    
+    if not matched_rows:
+        return pd.DataFrame()
+    
+    result = pd.DataFrame(matched_rows)
+    return result.reset_index(drop=True)
+
+
 class dfUtils(pd.core.frame.DataFrame):
     """Extend pandas DataFrame with custom methods
     author: ziru huang
