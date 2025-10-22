@@ -8,6 +8,7 @@ ai: claude-haiku-4.5
 from pathlib import Path
 import os
 
+
 def to_display_path(p):
     """Convert a Path to a relative path string for display using os.path.relpath."""
     try:
@@ -126,7 +127,6 @@ def create_chemprop_input_files(il_smiles: list[str],
 
 
 import subprocess
-from pathlib import Path
 
 def run_chemprop_prediction(input_files_dir="./model_input_files",
                             predict_script_path="./predict.py",
@@ -313,3 +313,56 @@ def run_chemprop_prediction(input_files_dir="./model_input_files",
             print(f"✗ {error_msg}")
     
     return result
+
+
+import pandas as pd
+import numpy as np
+
+def process_chemprop_results(predict_output_path: Path,
+                             viscosity_format: str = "mpas",
+                             verbose: bool = True) -> list[float]:
+    """Process Chemprop prediction results to extract viscosity predictions.
+    
+    Reads the prediction output CSV file and extracts the predicted viscosity values.
+    
+    Args:
+        predict_output_path (str or Path): Path to the Chemprop prediction output CSV file.
+        verbose (bool): If True, prints progress messages. Default is True.
+    
+    Returns:
+        list[float]: List of predicted viscosity values in mPa·s.
+    
+    Raises:
+        FileNotFoundError: If the prediction output file is not found.
+        ValueError: If the output file format is invalid or missing expected columns.
+    
+    Example:
+        >>> viscosities = process_chemprop_results(
+        ...     predict_output_path="./model_input_files/predict.csv"
+        ... )
+        >>> print(viscosities)
+    """
+    predict_output_path = Path(predict_output_path).resolve()
+    
+    if not predict_output_path.exists():
+        raise FileNotFoundError(f"Prediction output file not found: {predict_output_path}")
+    
+    if predict_output_path.suffix.lower() != ".csv":
+        raise ValueError(f"Prediction output file must be a .csv file, got: {predict_output_path.suffix}")
+    
+    df_prediction = pd.read_csv(predict_output_path)
+    
+    pred_cols = [col for col in df_prediction.columns if col.startswith("pred_")]
+
+    if viscosity_format == "mpas":
+        pass  # Already in mPa·s
+    elif viscosity_format == "pas":
+        df_prediction[pred_cols] = df_prediction[pred_cols] / 1000  # Convert to Pa·s
+    elif viscosity_format == "log mpas":
+        df_prediction[pred_cols] = np.exp(df_prediction[pred_cols])
+    elif viscosity_format == "log 10 mpas":
+        df_prediction[pred_cols] = 10**(df_prediction[pred_cols])
+    else:
+        raise ValueError(f"Unsupported viscosity_format: {viscosity_format}. Please use 'mpas', 'pas', 'log mpas', or 'log 10 mpas'.")
+
+    return df_prediction
