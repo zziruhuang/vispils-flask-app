@@ -2,6 +2,10 @@ import pandas as pd
 from IPython.display import display
 import os
 
+#===============================
+#    CSV Data Quick Loading
+#===============================
+
 def load_csv_info(filepath):
     """Get file size, row count, column count, and column names without loading entire file into memory."""
     file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
@@ -47,7 +51,10 @@ def load_csv_filtered(filepath, filter_dict=None, columns=None):
     return df
 
 
-# Default column mapping for standardizing old dataset column names
+# ===============================
+#   DataFrame Column Renaming
+# ===============================
+
 DEFAULT_RENAME_COLS = {
     "Dataset": "reference",
     "Iso SMILES": "sanitized_il_smiles",
@@ -63,7 +70,7 @@ DEFAULT_RENAME_COLS = {
     "avolume": "anion_volume_rdkit",
 }
 
-def rename_cols_df(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.DataFrame:
+def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.DataFrame:
     """Rename columns to standardized names for old dataset format.
      
     This function renames the old dataset column names to more standardized,
@@ -118,6 +125,10 @@ def rename_cols_df(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
 
     return df_renamed if not inplace else df
 
+
+# =======================================
+#   Merge on Temperature with Tolerance
+# =======================================
 
 def merge_with_tolerance(df_left: pd.DataFrame, 
                         df_right: pd.DataFrame,
@@ -229,6 +240,9 @@ def merge_with_tolerance(df_left: pd.DataFrame,
     result = pd.DataFrame(matched_rows)
     return result.reset_index(drop=True)
 
+# =======================================
+#   Extended DataFrame Class
+# =======================================
 
 class dfUtils(pd.core.frame.DataFrame):
     """Extend pandas DataFrame with custom methods
@@ -236,10 +250,21 @@ class dfUtils(pd.core.frame.DataFrame):
 
     Args:
         pd (DataFrame): pandas DataFrame object
+
+    Returns:
+        dfUtils: Extended DataFrame with additional methods
+
     """
-    def data_summary(self, il_smiles_col="Iso SMILES", temp_col="Temperature"):
+    def data_summary(self, il_smiles_col="Iso SMILES", temp_col="Temperature",
+                     head = True):
         """Display summary statistics of the dataframe."""
         
+        # Validate columns
+        if il_smiles_col not in self.columns:
+            raise ValueError(f"Column '{il_smiles_col}' not found in dataframe.")
+        if temp_col not in self.columns:
+            raise ValueError(f"Column '{temp_col}' not found in dataframe.")
+
         print("\n====== data summary ======\n")
         print(f"Total data points ({len(self)})")
         print(f"Unique IL SMILES ({len(self[il_smiles_col].unique())})")
@@ -251,10 +276,12 @@ class dfUtils(pd.core.frame.DataFrame):
                 v = sorted(v)[:25]
             print(f"{k} ({len(v)}): {v}")
 
-        display(self.head())
+        if head:
+            print("\nDataframe head:")
+            display(self.head())
 
 
-    def sanitize_old_df(self, inplace=True, rename_cols=None):
+    def sanitize_old_df_cols(self, inplace=True, rename_cols=None):
         """Rename columns to standardized names for old dataset format.
         
         This method provides a convenient wrapper around rename_cols_df() for use
@@ -280,4 +307,5 @@ class dfUtils(pd.core.frame.DataFrame):
             >>> custom_mapping = {'TempC': 'temperature_k', 'ViscMPa': 'viscosity_mpas'}
             >>> df_renamed = df.sanitize_old_df(inplace=False, rename_cols=custom_mapping)
         """
-        return rename_cols_df(self, inplace=inplace, rename_cols=rename_cols)
+
+        return rename_df_cols(self, inplace=inplace, rename_cols=rename_cols)
