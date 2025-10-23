@@ -93,11 +93,13 @@ curl -X POST http://localhost:5001/api/predict \
 
 - **`frontend/static/jsmol/`** – JSmol third-party package (download from [JSmol](http://wiki.jmol.org/index.php/JSmol))
 - **`frontend/static/img/`** – Frontend images (.png, .jpg, etc.)
-- **`app/data/`** – Application data files (.csv, .mol, etc.)
-- **`vispils/data/`** – Training/validation data (.csv, .xlsx, etc.)
-- **`vispils/models/`** – Trained ML model files (.pt, .pth, etc.)
+- **`vispils/data/`** – Experimental dataset to search (.csv, .xlsx, etc.)
+- **`vispils/models/`** – Trained model files (.pt, .pth, etc.)
+- **`app/data/`** – App generated data files (.csv, .mol, etc.)
 
-These directories contain `.gitkeep` files only. You must populate them with the actual assets before running the app. Large files will be managed via Git LFS or external storage in future releases.
+These directories contain `.gitkeep` files only. You must populate them with the actual assets before running the app.
+
+Sample large files are managed via external storage at: https://hkustconnect-my.sharepoint.com/:f:/g/personal/zhuangck_connect_ust_hk/EkWpzPHmzSZJoyY77Nj9xsUBFKcDygGOGHIfUc-6CMG87g?e=eVhzTf
 
 ## ✨ Features
 
