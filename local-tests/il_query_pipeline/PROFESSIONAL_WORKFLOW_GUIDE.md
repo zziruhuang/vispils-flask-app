@@ -1,5 +1,8 @@
 # Professional IL Viscosity Prediction Workflow
 
+- Read: 20-min
+- Purpose: Complete reference
+
 ## Overview
 
 You've developed a **robust, production-ready pipeline** for querying ionic liquid (IL) data and generating viscosity predictions using trained Graph Convolutional Neural Networks (GCNNs). This document consolidates the workflow and best practices for your future professional use.

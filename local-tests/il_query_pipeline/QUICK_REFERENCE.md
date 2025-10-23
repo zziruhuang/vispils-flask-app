@@ -1,8 +1,6 @@
 # IL Viscosity Pipeline - Quick Reference
 
-## 🎬 Fastest Way to Get Started
-
-### Copy-Paste Ready: Complete Working Example
+## 🎬 Fastest Way to Get Started: Python Module
 
 ```python
 # Step 1: Import and initialize

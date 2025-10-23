@@ -1,5 +1,8 @@
 # Temperature Matching with Tolerance
 
+- Read: 10 min
+- Purpose: Technical details
+
 ## Problem
 
 When comparing experimental and predicted viscosity data, temperature values often don't match exactly due to:

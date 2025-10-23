@@ -1,5 +1,8 @@
 # 🎯 Your IL Viscosity Prediction Pipeline - Consolidation Summary
 
+- Read: 10-min
+- Purpose: What you've built
+
 ## What You've Built
 
 You've created a **professional-grade, production-ready pipeline** for querying ionic liquid data and predicting viscosity using GCNN models. This is a significant achievement that consolidates:
