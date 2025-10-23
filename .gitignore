@@ -78,7 +78,6 @@ pkgs/
 *.ipynb_checkpoints
 
 # Logs and runtime
-logs/
 *.log
 debug.log*
 .venv/
