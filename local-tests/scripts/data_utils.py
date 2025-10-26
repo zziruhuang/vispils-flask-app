@@ -57,24 +57,31 @@ def load_csv_filtered(filepath, filter_dict=None, columns=None):
 
 DEFAULT_RENAME_COLS = {
     "Dataset": "reference",
-    "Iso SMILES": "sanitized_il_smiles",
+    "Iso SMILES": "il_smiles",
     "cSMILES": "cation_smiles",
     "aSMILES": "anion_smiles",
+    # property column names
     "Pressure": "pressure_atm",
     "Temperature": "temperature_k", 
     "Viscosity": "viscosity_mpas",
+    'η (mPas)': "viscosity_mpas",
     "Log viscosity": "log_10_viscosity_mpas",
+    # chemical structure column names
     "cfam": "cation_family",
     "afam": "anion_family",
-    "cvolume": "cation_volume_rdkit",
-    "avolume": "anion_volume_rdkit",
+    'cfam1': "cation_family",
+    'afam1': "anion_family",
+    # descriptor columns names
+    # "cvolume": "cation_volume_rdkit",
+    # "avolume": "anion_volume_rdkit",
 }
 
 def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.DataFrame:
-    """Rename columns to standardized names for old dataset format.
+    """Rename specified columns only - keep all other columns unchanged.
      
-    This function renames the old dataset column names to more standardized,
-    snake_case naming conventions. It handles missing columns gracefully.
+    This function selectively renames only the columns specified in the mapping dictionary.
+    All other columns remain untouched. It handles missing columns gracefully by only
+    renaming those that exist in the dataframe.
      
     Args:
         df (pd.DataFrame): The dataframe to rename columns in.
@@ -82,22 +89,26 @@ def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
                        If False, returns a new dataframe with renamed columns.
                        Default is False.
         rename_cols (dict, optional): Custom mapping of old column names to new names.
+                                      Only columns in this dictionary will be renamed.
                                       If None, uses DEFAULT_RENAME_COLS.
                                       Default is None.
      
     Returns:
-        pd.DataFrame: The dataframe with renamed columns (same object if inplace=True,
-                      new copy if inplace=False).
+        pd.DataFrame: The dataframe with specified columns renamed. All other columns 
+                      remain unchanged (same object if inplace=True, new copy if inplace=False).
      
     Example:
-        >>> df = pd.read_csv('data.csv')
-        >>> df_renamed = rename_cols_df(df, inplace=False)
-        >>> # Or with custom mapping:
-        >>> custom_mapping = {'OldName': 'new_name', 'Another': 'renamed'}
-        >>> # Or with merged mapping:
-        >>> merged_mapping = {**DEFAULT_RENAME_COLS, 'CustomCol': 'custom_new_name'}
-        >>> df_renamed = rename_cols_df(df, rename_cols=merged_mapping)
-        >>> df.rename_cols_df(df, rename_cols=custom_mapping)
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({
+        ...     'Temperature': [273.15, 283.15],
+        ...     'η (mPas)': [10.5, 12.3],
+        ...     'OtherColumn': [1, 2]  # This stays unchanged
+        ... })
+        >>> # With custom mapping - only renames specified columns
+        >>> custom_mapping = {'Temperature': 'temperature_k', 'η (mPas)': 'viscosity_mpas'}
+        >>> df_renamed = rename_df_cols(df, rename_cols=custom_mapping, inplace=False)
+        >>> print(df_renamed.columns)
+        # Output: Index(['temperature_k', 'viscosity_mpas', 'OtherColumn'], dtype='object')
 
     """
     
@@ -105,22 +116,33 @@ def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
     if rename_cols is None:
         rename_cols = DEFAULT_RENAME_COLS.copy()
     
-    # Check which columns exist in the dataframe
-    existing_renames = {old: new for old, new in rename_cols.items() 
-                       if old in df.columns}
+    # Filter to only columns that exist in the dataframe
+    # This ensures we only rename what we specify, leaving all others unchanged
+    existing_renames = {old: new for old, new in rename_cols.items() if old in df.columns}
     
     if not existing_renames:
-        print(f"Warning: No columns found to rename. Available columns: {list(df.columns)}")
+        print(f"⚠️  Warning: No columns found to rename.")
+        print(f"   Available columns: {list(df.columns)}")
+        print(f"   Requested to rename: {list(rename_cols.keys())}")
         return df.copy() if not inplace else df
-    else:
-        print(f"Renaming {len(existing_renames)} columns: {list(existing_renames.keys())}")
     
-    # Log missing columns
+    # Report what we're renaming
+    print(f"✓ Renaming {len(existing_renames)} column(s):")
+    for old, new in existing_renames.items():
+        print(f"  '{old}' → '{new}'")
+    
+    # Log columns that were not found (not an error, just info)
     missing_cols = set(rename_cols.keys()) - set(df.columns)
     if missing_cols:
-        print(f"Info: The following columns were not found and not renamed: {missing_cols}")
+        print(f"ℹ️  Note: {len(missing_cols)} column(s) not found (not renamed):")
+        for col in missing_cols:
+            print(f"  - '{col}'")
     
-    # Apply renaming
+    # Log columns that remain unchanged
+    unchanged = set(df.columns) - set(existing_renames.keys())
+    print(f"ℹ️  {len(unchanged)} column(s) remain unchanged")
+    
+    # Apply renaming - only specified columns are renamed, all others stay the same
     df_renamed = df.rename(columns=existing_renames, inplace=inplace)
 
     return df_renamed if not inplace else df
@@ -274,7 +296,7 @@ class dfUtils(pd.core.frame.DataFrame):
         for k, v in [("Unique temperatures", self[temp_col].unique()), ("Columns", columns)]:
             if len(v) > 25:
                 v = sorted(v)[:25]
-            print(f"{k} ({len(v)}): {v}")
+            print(f"{k} ({len(columns)}): {v}")
 
         if head:
             print("\nDataframe head:")
@@ -282,30 +304,36 @@ class dfUtils(pd.core.frame.DataFrame):
 
 
     def sanitize_old_df_cols(self, inplace=True, rename_cols=None):
-        """Rename columns to standardized names for old dataset format.
+        """Rename specified columns only - keep all other columns unchanged.
         
-        This method provides a convenient wrapper around rename_cols_df() for use
-        with dfUtils instances. It allows flexible column renaming with custom mappings.
+        This method selectively renames only the columns provided in the dictionary.
+        All other columns remain untouched. Perfect for standardizing column names
+        while preserving additional columns.
         
         Args:
             inplace (bool): If True, modifies the dataframe in-place and returns self.
                           If False, returns a new dataframe with renamed columns.
                           Default is True for method chaining compatibility.
-            rename_cols (dict, optional): Custom mapping of old column names to new names.
+            rename_cols (dict, optional): Mapping of old column names to new names.
+                                         Only columns in this dictionary will be renamed.
+                                         All other columns stay unchanged.
                                          If None, uses DEFAULT_RENAME_COLS.
                                          Default is None.
         
         Returns:
             pd.DataFrame or dfUtils: Self if inplace=True, otherwise a new DataFrame 
-                                     (or dfUtils object) with renamed columns.
+                                     (or dfUtils object) with specified columns renamed
+                                     and all other columns preserved.
         
         Example:
             >>> df = dfUtils(pd.read_csv('data.csv'))
-            >>> df.sanitize_old_df()  # Uses default mapping, modifies in-place
-            >>> 
-            >>> # With custom column mapping:
-            >>> custom_mapping = {'TempC': 'temperature_k', 'ViscMPa': 'viscosity_mpas'}
-            >>> df_renamed = df.sanitize_old_df(inplace=False, rename_cols=custom_mapping)
+            >>> # Rename only specified columns, keep the rest unchanged
+            >>> custom_mapping = {
+            ...     'Temperature': 'temperature_k',
+            ...     'η (mPas)': 'viscosity_mpas'
+            ... }
+            >>> df_renamed = df.sanitize_old_df_cols(inplace=False, rename_cols=custom_mapping)
+            >>> # Any other columns in the dataframe remain with original names
         """
 
         return rename_df_cols(self, inplace=inplace, rename_cols=rename_cols)
