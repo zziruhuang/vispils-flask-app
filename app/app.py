@@ -26,6 +26,8 @@ from rdkit.Chem import Draw
 from PIL import Image
 from openbabel import pybel
 
+from pathlib import Path
+
 # Import prediction modules (uncomment when available)
 # from vispils.predict import process_int, assign_g2cnn_descs, get_gcnn_files
 
@@ -79,20 +81,27 @@ def smiles_to_3d_molfile(smiles):
         return None
 
 
-def load_vispils_data():
+def load_vispils_data(data_path=None):
     """
     Load and prepare VISPILS database data.
     
     Returns:
         tuple: (vispils_df, cations_df, anions_df)
     """
+
+    # Path validation
+    data_path = Path(__file__).parent / data_path if data_path else None
+    print(f"Loading VISPILS data from: {data_path}")
+    if not data_path.is_file():
+        print(f"Data file not found: {data_path}")
+        return None, None, None
+
     try:
-        data_path = os.path.join(os.path.dirname(__file__), "..", "vispils", "data", "vispils-v1.csv")
         vispils_df = pd.read_csv(data_path)
         
         # Extract unique cations and anions
-        cations_df = vispils_df.drop_duplicates(['cSMILES'])[['cSMILES', 'cfam1', 'cfam_class']]
-        anions_df = vispils_df.drop_duplicates(['aSMILES'])[['aSMILES', 'afam1', 'afam_class']]
+        cations_df = vispils_df.drop_duplicates(['cation_smiles'])[['cation_smiles', 'cation_family', 'cation_class']]
+        anions_df = vispils_df.drop_duplicates(['anion_smiles'])[['anion_smiles', 'anion_family', 'anion_class']]
         
         return vispils_df, cations_df, anions_df
     except Exception as e:
@@ -110,9 +119,9 @@ app = Flask(__name__,
 
 # Enable CORS for frontend integration
 CORS(app)
-
+VISPILS_DATA_PATH = '../vispils/data/vispils_il_combinatorial_sample520.csv'
 # Load data
-VISPILS_DATA, CATIONS_DATA, ANIONS_DATA = load_vispils_data()
+VISPILS_DATA, CATIONS_DATA, ANIONS_DATA = load_vispils_data(VISPILS_DATA_PATH)
 
 # Global user selection storage (in production, use Redis or database)
 user_selections = {}
@@ -160,11 +169,11 @@ def handle_selection():
         # Handle different selection types
         if selection_type == 'select-cfams':
             # Get cations from selected cation family
-            candidates = CATIONS_DATA[CATIONS_DATA['cfam1'] == selection_value]['cSMILES'].tolist()
+            candidates = CATIONS_DATA[CATIONS_DATA['cation_family'] == selection_value]['cation_smiles'].tolist()
             
         elif selection_type == 'select-afams':
-            # Get anions from selected anion family
-            candidates = ANIONS_DATA[ANIONS_DATA['afam_class'] == selection_value]['aSMILES'].tolist()
+            # Get anions from selected anion class
+            candidates = ANIONS_DATA[ANIONS_DATA['anion_class'] == selection_value]['anion_smiles'].tolist()
             
         elif selection_type in ['select-cations', 'select-anions']:
             # Direct SMILES selection - return success
@@ -271,15 +280,15 @@ def predict_properties():
             mol = Chem.MolFromSmiles(smiles_input)
             if mol is None:
                 return jsonify({"error": "Invalid SMILES string"}), 400
-            standardized_smiles = Chem.MolToSmiles(mol, isomericSmiles=True)
+            standardized_smiles = Chem.MolToSmiles(mol)
         except Exception as e:
             return jsonify({"error": f"Error processing SMILES: {e}"}), 400
         
         # Search in VISPILS database
         tolerance = 1
         matching_data = VISPILS_DATA[
-            (VISPILS_DATA['Iso SMILES'] == standardized_smiles) & 
-            (VISPILS_DATA['Temperature'].between(temperature - tolerance, temperature + tolerance))
+            (VISPILS_DATA['il_smiles'] == standardized_smiles) & 
+            (VISPILS_DATA['temperature_k'].between(temperature - tolerance, temperature + tolerance))
         ]
 
         experimental_value = None
@@ -287,25 +296,25 @@ def predict_properties():
         if len(matching_data) >= 1:
             # Found in database
             row = matching_data.iloc[0]
-            experimental_value = 10 ** row['Log viscosity']
+            experimental_value = 10 ** row['log_10_viscosity_mpas']
             experimental_text = f'η = {experimental_value:.2f} mPas at {temperature} K (Experimental)'
         
         # Always run ML prediction
         predicted_value = None
         predicted_text = None
         try:
-            smis_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'data-smis.csv')
-            descs_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'data-descs.csv')
-            predict_out_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'Predict.csv')
+            smis_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'input_smiles.csv')
+            descs_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'input_descs.csv')
+            predict_out_path = os.path.join(os.path.dirname(__file__), '..', "app", 'data', 'predict.csv')
             with open(smis_path, 'w') as f:
-                f.write('Iso SMILES,Log viscosity\n')
+                f.write('il_smiles,log_10_viscosity_mpas\n')
                 f.write(f'{standardized_smiles},0\n')
             with open(descs_path, 'w') as f:
-                f.write('temperature\n')
+                f.write('temperature_k\n')
                 f.write(f'{temperature}\n')
             import subprocess
             script_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'predict.py')
-            checkpoint_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'models', 'model-corr-5-temp-100-3-2-scale3-constrain-seed42', 'fold_0')
+            checkpoint_path = os.path.join(os.path.dirname(__file__), '..', 'vispils', 'models')
             cmd = [
                 'python', script_path,
                 '--data_path', smis_path,
@@ -406,8 +415,8 @@ if __name__ == "__main__":
     
     print("VISPILS Backend Server Starting...")
     print(f"Loaded {len(VISPILS_DATA)} ionic liquid records")
-    print(f"Available cation families: {len(CATIONS_DATA['cfam1'].unique())}")
-    print(f"Available anion families: {len(ANIONS_DATA['afam_class'].unique())}")
+    print(f"Available cation families: {len(CATIONS_DATA['cation_family'].unique())}")
+    print(f"Available anion classes: {len(ANIONS_DATA['anion_class'].unique())}")
     
     # Run the application
     app.run(debug=True, host='0.0.0.0', port=5001)

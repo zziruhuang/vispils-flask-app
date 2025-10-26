@@ -71,6 +71,8 @@ DEFAULT_RENAME_COLS = {
     "afam": "anion_family",
     'cfam1': "cation_family",
     'afam1': "anion_family",
+    'cfam_class': "cation_class",
+    'afam_class': "anion_class",
     # descriptor columns names
     # "cvolume": "cation_volume_rdkit",
     # "avolume": "anion_volume_rdkit",
@@ -277,7 +279,7 @@ class dfUtils(pd.core.frame.DataFrame):
         dfUtils: Extended DataFrame with additional methods
 
     """
-    def data_summary(self, il_smiles_col="Iso SMILES", temp_col="Temperature",
+    def data_summary(self, il_smiles_col="il_smiles", temp_col="temperature_k",
                      head = True):
         """Display summary statistics of the dataframe."""
         
