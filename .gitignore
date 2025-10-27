@@ -7,7 +7,6 @@ desktop.ini
 .Trashes
 
 # Media Folders & Binary Files
-docs/
 archive/
 *.pptx
 *.pdf
@@ -35,7 +34,7 @@ archive/
 *.ckpt
 *.h5
 *.joblib
-*.pkl
+*.pkl 
 
 
 # Git LFS files: git lfs track "img/"
@@ -79,7 +78,6 @@ pkgs/
 *.ipynb_checkpoints
 
 # Logs and runtime
-logs/
 *.log
 debug.log*
 .venv/
