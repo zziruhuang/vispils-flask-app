@@ -27,7 +27,6 @@ archive/
 
 
 
-
 # ML model artifacts and outputs (do not commit large binary weights)
 *.pt
 *.pth
@@ -37,15 +36,16 @@ archive/
 *.pkl 
 
 
-# Git LFS files: git lfs track "img/"
+# Large assets
+*.zip
+*.tar.gz
 frontend/static/img/*
 !frontend/static/img/.gitkeep
 vispils/data/*
 !vispils/data/.gitkeep
 vispils/models/*
 !vispils/models/.gitkeep
-
-# Frontend files
+# Frontend tmps
 app/data/*
 !app/data/.gitkeep
 frontend/static/jsmol/*
