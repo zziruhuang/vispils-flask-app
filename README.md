@@ -56,17 +56,23 @@ pip install -r requirements.txt
 
 Note: RDKit, OpenBabel and some PyTorch builds are easiest to install via conda. Prefer Option A or B if possible.
 
-#### 3. Prepare model directory
+#### 3. Download and set up required assets
 
 ```bash
-# macOS / Linux
-mkdir -p vispils/model
+# download and set up assets of the lastest release
+python setup_assets.py
 
-# Windows (cmd / PowerShell)
-mkdir vispils\model
 ```
 
-Place your trained model files in vispils/model/
+The current repo uses `.gitkeep` placeholder files to preserve directory structure for large assets that are not tracked by Git:
+
+- **`frontend/static/jsmol/`** – JSmol third-party package (download from [JSmol](http://wiki.jmol.org/index.php/JSmol))
+- **`frontend/static/img/`** – Frontend images (.png, .jpg, etc.)
+- **`vispils/data/`** – Experimental dataset to search (.csv, .xlsx, etc.)
+- **`vispils/models/`** – Trained model files (.pt, .pth, etc.)
+- **`app/data/`** – App generated data files (.csv, .mol, etc.)
+
+These directories contain `.gitkeep` files only. You must populate them with the actual assets before running the app.
 
 #### 4. Run the app
 
@@ -78,28 +84,6 @@ python app/app.py
 
 conda deactivate
 ```
-
-#### Quick API test
-
-```bash
-curl -X POST http://localhost:5001/api/predict \
-  -H "Content-Type: application/json" \
-  -d '{"smiles":"CCO","temperature":298}'
-```
-
-#### Installation Notes
-
-**Important:** The current repo uses `.gitkeep` placeholder files to preserve directory structure for large assets that are not tracked by Git:
-
-- **`frontend/static/jsmol/`** – JSmol third-party package (download from [JSmol](http://wiki.jmol.org/index.php/JSmol))
-- **`frontend/static/img/`** – Frontend images (.png, .jpg, etc.)
-- **`vispils/data/`** – Experimental dataset to search (.csv, .xlsx, etc.)
-- **`vispils/models/`** – Trained model files (.pt, .pth, etc.)
-- **`app/data/`** – App generated data files (.csv, .mol, etc.)
-
-These directories contain `.gitkeep` files only. You must populate them with the actual assets before running the app.
-
-Sample large files are managed via external storage at: https://hkustconnect-my.sharepoint.com/:f:/g/personal/zhuangck_connect_ust_hk/EkWpzPHmzSZJoyY77Nj9xsUBFKcDygGOGHIfUc-6CMG87g?e=eVhzTf
 
 ## ✨ Features
 
