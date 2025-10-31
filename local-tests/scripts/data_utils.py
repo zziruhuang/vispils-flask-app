@@ -56,23 +56,29 @@ def load_csv_filtered(filepath, filter_dict=None, columns=None):
 # ===============================
 
 DEFAULT_RENAME_COLS = {
+    #"DataSource": "data_origin",
+    #"Dataset": "reference_doi",
     "Dataset": "reference",
+    # property column names
     "Iso SMILES": "il_smiles",
     "cSMILES": "cation_smiles",
     "aSMILES": "anion_smiles",
-    # property column names
     "Pressure": "pressure_atm",
     "Temperature": "temperature_k", 
     "Viscosity": "viscosity_mpas",
     'η (mPas)': "viscosity_mpas",
     "Log viscosity": "log_10_viscosity_mpas",
-    # chemical structure column names
-    "cfam": "cation_family",
-    "afam": "anion_family",
+    # chemical structure derived category column names
+    "cfam": "cation_family_v0",
+    "afam": "anion_family_v0",
     'cfam1': "cation_family",
     'afam1': "anion_family",
     'cfam_class': "cation_class",
     'afam_class': "anion_class",
+    'cFGs': "cation_functional_group",
+    'aFGs': "anion_functional_group",
+    'cFGsGroup': "cation_functional_group_class",
+    'aFGsGroup': "anion_functional_group_class",
     # descriptor columns names
     # "cvolume": "cation_volume_rdkit",
     # "avolume": "anion_volume_rdkit",
@@ -149,6 +155,18 @@ def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
 
     return df_renamed if not inplace else df
 
+def group_summary(df, group_col):
+    """Display summary statistics for a specified grouping column in the dataframe."""
+    
+    # Validate column
+    if group_col not in df.columns:
+        raise ValueError(f"Column '{group_col}' not found in dataframe.")
+    
+    print(f"\nGroup summary by {group_col}:")
+    print(f"number of unique {group_col}: {df[group_col].nunique()}")
+    print('-'*40)
+    display(df.groupby(group_col).size())
+    print('-'*40)
 
 # =======================================
 #   Merge on Temperature with Tolerance
@@ -279,30 +297,30 @@ class dfUtils(pd.core.frame.DataFrame):
         dfUtils: Extended DataFrame with additional methods
 
     """
-    def data_summary(self, il_smiles_col="il_smiles", temp_col="temperature_k",
-                     head = True):
+    def data_summary(self, head = 5,
+                     smiles_col="il_smiles", temperature_col="temperature_k"):
         """Display summary statistics of the dataframe."""
         
         # Validate columns
-        if il_smiles_col not in self.columns:
-            raise ValueError(f"Column '{il_smiles_col}' not found in dataframe.")
-        if temp_col not in self.columns:
-            raise ValueError(f"Column '{temp_col}' not found in dataframe.")
+        if smiles_col not in self.columns:
+            raise ValueError(f"Column '{smiles_col}' not found in dataframe. Might be 'Iso SMILES' or 'il_smiles'.")
+        if temperature_col not in self.columns:
+            raise ValueError(f"Column '{temperature_col}' not found in dataframe. Might be 'Temperature' or 'temperature_k'.")
 
         print("\n====== data summary ======\n")
         print(f"Total data points ({len(self)})")
-        print(f"Unique IL SMILES ({len(self[il_smiles_col].unique())})")
+        print(f"Unique IL SMILES ({len(self[smiles_col].unique())})")
         
         columns = self.columns
 
-        for k, v in [("Unique temperatures", self[temp_col].unique()), ("Columns", columns)]:
+        for k, v in [("Unique temperatures", self[temperature_col].unique()), ("Columns", columns)]:
             if len(v) > 25:
                 v = sorted(v)[:25]
             print(f"{k} ({len(columns)}): {v}")
 
-        if head:
+        if head is not None and head > 0:
             print("\nDataframe head:")
-            display(self.head())
+            display(self.head(head))
 
 
     def sanitize_old_df_cols(self, inplace=True, rename_cols=None):
