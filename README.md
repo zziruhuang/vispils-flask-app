@@ -4,6 +4,10 @@
 
 ---
 
+## Hugging Face Preview
+
+Preview the static web demo at Hugging Face: [VISPILS Flask](https://huggingface.co/spaces/zziruhuang/vispils-flask)
+
 ## 🚀 Quick Start
 
 #### 1. Clone the repo
