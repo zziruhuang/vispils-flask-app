@@ -1,6 +1,7 @@
 import pandas as pd
 from IPython.display import display
 import os
+from typing import Optional
 
 #===============================
 #    CSV Data Quick Loading
@@ -151,9 +152,10 @@ def rename_df_cols(df: pd.DataFrame, inplace=False, rename_cols=None) -> pd.Data
     print(f"ℹ️  {len(unchanged)} column(s) remain unchanged")
     
     # Apply renaming - only specified columns are renamed, all others stay the same
-    df_renamed = df.rename(columns=existing_renames, inplace=inplace)
-
-    return df_renamed if not inplace else df
+    if inplace:
+        df.rename(columns=existing_renames, inplace=True)
+        return df
+    return df.rename(columns=existing_renames, inplace=False)
 
 def group_summary(df, group_col):
     """Display summary statistics for a specified grouping column in the dataframe."""
@@ -167,6 +169,73 @@ def group_summary(df, group_col):
     print('-'*40)
     display(df.groupby(group_col).size())
     print('-'*40)
+
+
+class DataFrameInspector:
+    """Encapsulate repeated data inspection steps."""
+
+    def __init__(self, df: pd.DataFrame, label: Optional[str] = None, copy: bool = True):
+        self._frame = df.copy() if copy else df
+        self.label = label or getattr(df, "name", "dataframe")
+
+    @property
+    def frame(self) -> pd.DataFrame:
+        return self._frame
+
+    def summary(self,
+                head: int = 5,
+                smiles_col: str = "il_smiles",
+                temperature_col: str = "temperature_k",
+                show_head: bool = True) -> None:
+        """Mirror the notebook's data_summary logic."""
+
+        if smiles_col not in self._frame.columns:
+            raise ValueError(
+                f"Column '{smiles_col}' not found in {self.label}. "
+                "Names may be 'Iso SMILES' or 'il_smiles'."
+            )
+        if temperature_col not in self._frame.columns:
+            raise ValueError(
+                f"Column '{temperature_col}' not found in {self.label}. "
+                "Names may be 'Temperature' or 'temperature_k'."
+            )
+
+        cols = self._frame.columns
+        print(f"\n====== data summary ({self.label}) ======\n")
+        print(f"Total data points ({len(self._frame)})")
+        print(f"Unique IL SMILES ({len(self._frame[smiles_col].unique())})")
+
+        for label, values in [
+            ("Unique temperatures", self._frame[temperature_col].unique()),
+            ("Columns", cols)
+        ]:
+            display_values = values
+            if len(display_values) > 25:
+                display_values = sorted(display_values)[:25]
+            print(f"{label} ({len(cols)}): {display_values}")
+
+        if show_head and head and head > 0:
+            print("\nDataframe head:")
+            display(self._frame.head(head))
+
+    def sanitize_columns(self, rename_cols: Optional[dict] = None, inplace: bool = True):
+        """Standardize column names using the shared rename map."""
+
+        sanitized = rename_df_cols(self._frame, inplace=inplace, rename_cols=rename_cols)
+        if not inplace:
+            self._frame = sanitized
+            return sanitized
+        return self
+
+    def group_summary(self, *group_cols: str) -> None:
+        """Run ``group_summary`` for every supplied column."""
+
+        for col in group_cols:
+            group_summary(self._frame, col)
+
+    def head(self, n: int = 5) -> pd.DataFrame:
+        return self._frame.head(n)
+
 
 # =======================================
 #   Merge on Temperature with Tolerance
@@ -207,12 +276,10 @@ def merge_with_tolerance(df_left: pd.DataFrame,
         >>> df_merged = merge_with_tolerance(df_exp, df_pred, tolerance=1.0)
         >>> # All rows match because differences are <= 1.0 K
     """
-    import numpy as np
-    
     # Create a merge key for matching within tolerance
     def find_matches(left_val, right_series, tol):
         """Find all indices in right_series within tolerance of left_val"""
-        distances = np.abs(right_series - left_val)
+        distances = (right_series - left_val).abs()
         return distances <= tol
     
     # Initialize result list
@@ -249,7 +316,7 @@ def merge_with_tolerance(df_left: pd.DataFrame,
                 # Add NaN columns from right df
                 for col in df_right.columns:
                     if col not in merged_dict:
-                        merged_dict[col] = np.nan
+                        merged_dict[col] = float('nan')
                 merged_row = pd.Series(merged_dict)
                 matched_rows.append(merged_row)
     
@@ -272,7 +339,7 @@ def merge_with_tolerance(df_left: pd.DataFrame,
                 # Add NaN columns from left df
                 for col in df_left.columns:
                     if col not in merged_dict:
-                        merged_dict[col] = np.nan
+                        merged_dict[col] = float('nan')
                 merged_row = pd.Series(merged_dict)
                 matched_rows.append(merged_row)
     
@@ -286,7 +353,7 @@ def merge_with_tolerance(df_left: pd.DataFrame,
 #   Extended DataFrame Class
 # =======================================
 
-class dfUtils(pd.core.frame.DataFrame):
+class dfUtils(pd.DataFrame):
     """Extend pandas DataFrame with custom methods
     author: ziru huang
 
