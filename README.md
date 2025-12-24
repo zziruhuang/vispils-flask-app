@@ -19,7 +19,17 @@ cd vispils-flask-app
 
 #### 2. Create a Python environment (choose one)
 
-Option A — Conda env file (recommended)
+Option A — Conda manual setup (recommended)
+
+```bash
+conda create -n vispils python=3.10 -y
+conda activate vispils
+conda install -c conda-forge rdkit openbabel -y
+conda install pytorch torchvision torchaudio -c pytorch -y
+pip install -r requirements.txt
+```
+
+Option B — Conda env file
 
 ```bash
 # If conda-vispils.yml is in the project root:
@@ -29,36 +39,6 @@ conda env create -f /path/to/conda-vispils.yml
 
 conda activate vispils
 ```
-
-Option B — Conda manual setup
-
-```bash
-conda create -n vispils python=3.8 -y
-conda activate vispils
-conda install -c conda-forge rdkit openbabel -y
-conda install pytorch torchvision torchaudio -c pytorch -y
-pip install -r requirements.txt
-```
-
-Option C — virtualenv / pip (advanced)
-
-```bash
-python -m venv venv
-
-# macOS / Linux
-source venv/bin/activate
-
-# Windows (PowerShell)
-.\venv\Scripts\Activate.ps1
-
-# Windows (cmd)
-venv\Scripts\activate.bat
-
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-Note: RDKit, OpenBabel and some PyTorch builds are easiest to install via conda. Prefer Option A or B if possible.
 
 #### 3. Download and set up required assets
 
