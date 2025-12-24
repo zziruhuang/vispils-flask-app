@@ -6,6 +6,11 @@ Thumbs.db
 desktop.ini
 .Trashes
 
+# local development files
+local_dev/*
+!local_dev/scripts/
+
+
 # Media Folders & Binary Files
 archive/
 *.pptx
@@ -25,8 +30,6 @@ archive/
 *.xlsx
 *.csv
 
-
-
 # ML model artifacts and outputs (do not commit large binary weights)
 *.pt
 *.pth
@@ -34,7 +37,6 @@ archive/
 *.h5
 *.joblib
 *.pkl 
-
 
 # Large assets
 *.zip
@@ -45,12 +47,12 @@ vispils/data/*
 !vispils/data/.gitkeep
 vispils/models/*
 !vispils/models/.gitkeep
+
 # Frontend tmps
 app/data/*
 !app/data/.gitkeep
 frontend/static/jsmol/*
 !frontend/static/jsmol/.gitkeep
-
 
 # Python artifacts
 __pycache__/
@@ -87,7 +89,6 @@ htmlcov/
 .pytest_cache/
 tox.ini
 .tox/
-
 
 # Node / frontend build artifacts
 node_modules/
@@ -129,7 +130,6 @@ docker-compose.override.yml
 *.bak
 *.tmp
 *.temp
-Thumbs.db
 
 # Allow tracking of this file and placeholder files
 !.gitignore
